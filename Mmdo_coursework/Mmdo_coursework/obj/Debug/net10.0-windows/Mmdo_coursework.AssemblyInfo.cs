@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mmdo_coursework")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d799b02c3963ec2a32c55cb22cbd29cd4ba3d29d")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mmdo_coursework")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mmdo_coursework")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

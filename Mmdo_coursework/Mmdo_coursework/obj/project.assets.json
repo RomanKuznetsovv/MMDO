@@ -2,6 +2,15 @@
   "version": 3,
   "targets": {
     "net10.0-windows7.0": {
+      "MaterialSkin/0.2.1": {
+        "type": "package",
+        "compile": {
+          "lib/MaterialSkin.dll": {}
+        },
+        "runtime": {
+          "lib/MaterialSkin.dll": {}
+        }
+      },
       "Microsoft.Web.WebView2/1.0.3967.48": {
         "type": "package",
         "build": {
@@ -41,6 +50,18 @@
     }
   },
   "libraries": {
+    "MaterialSkin/0.2.1": {
+      "sha512": "/6AEh6qIeNKbxsha7IHBb5s50tyvB0iZuGQPB9mjyR+mRdfQ7vnKTklwI26Y/DbrymTcg+aBHSgCgAT7/qLIrQ==",
+      "type": "package",
+      "path": "materialskin/0.2.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/MaterialSkin.dll",
+        "materialskin.0.2.1.nupkg.sha512",
+        "materialskin.nuspec"
+      ]
+    },
     "Microsoft.Web.WebView2/1.0.3967.48": {
       "sha512": "b7dZ5kZ9bfU5Yo11M8feCOoiyalXCN+2Gsw674RBDBmQ2dJV5EOXb8/ivN2LuLJ+VO2V7FmK6l6LsyfEnG1lXw==",
       "type": "package",
@@ -173,6 +194,7 @@
   },
   "projectFileDependencyGroups": {
     "net10.0-windows7.0": [
+      "MaterialSkin >= 0.2.1",
       "Microsoft.Web.WebView2 >= 1.0.3967.48",
       "ReaLTaiizor >= 3.8.1.8"
     ]
@@ -229,6 +251,10 @@
         "framework": "net10.0-windows7.0",
         "targetAlias": "net10.0-windows",
         "dependencies": {
+          "MaterialSkin": {
+            "target": "Package",
+            "version": "[0.2.1, )"
+          },
           "Microsoft.Web.WebView2": {
             "target": "Package",
             "version": "[1.0.3967.48, )"
@@ -550,5 +576,17 @@
         }
       }
     }
-  }
+  },
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'MaterialSkin 0.2.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net10.0-windows7.0'. This package may not be fully compatible with your project.",
+      "libraryId": "MaterialSkin",
+      "targetGraphs": [
+        "net10.0-windows"
+      ]
+    }
+  ]
 }

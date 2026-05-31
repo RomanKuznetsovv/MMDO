@@ -1,11 +1,25 @@
 {
   "version": 2,
-  "dgSpecHash": "yDdbMc3Ptq4=",
+  "dgSpecHash": "dgZprHEgHQg=",
   "success": true,
   "projectFilePath": "D:\\THIRDCOURSE\\Математичні методи дослідження операцій\\MMDO_Coursework\\Mmdo_coursework\\Mmdo_coursework\\Mmdo_coursework.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Lenovo\\.nuget\\packages\\materialskin\\0.2.1\\materialskin.0.2.1.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\microsoft.web.webview2\\1.0.3967.48\\microsoft.web.webview2.1.0.3967.48.nupkg.sha512",
     "C:\\Users\\Lenovo\\.nuget\\packages\\realtaiizor\\3.8.1.8\\realtaiizor.3.8.1.8.nupkg.sha512"
   ],
-  "logs": []
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "message": "Package 'MaterialSkin 0.2.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net10.0-windows7.0'. This package may not be fully compatible with your project.",
+      "projectPath": "D:\\THIRDCOURSE\\Математичні методи дослідження операцій\\MMDO_Coursework\\Mmdo_coursework\\Mmdo_coursework\\Mmdo_coursework.csproj",
+      "warningLevel": 1,
+      "filePath": "D:\\THIRDCOURSE\\Математичні методи дослідження операцій\\MMDO_Coursework\\Mmdo_coursework\\Mmdo_coursework\\Mmdo_coursework.csproj",
+      "libraryId": "MaterialSkin",
+      "targetGraphs": [
+        "net10.0-windows"
+      ]
+    }
+  ]
 }
