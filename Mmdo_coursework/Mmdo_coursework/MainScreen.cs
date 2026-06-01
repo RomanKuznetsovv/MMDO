@@ -96,12 +96,9 @@ namespace Mmdo_coursework
         {
             SystemSolutionForm solutionWindow = new SystemSolutionForm(this);
             solutionWindow.Show();
-            this.Hide();
+            //this.Hide();
         }
 
-        private void MainScreen_Load(object sender, EventArgs e)
-        {
-
-        }
+       
     }
 }

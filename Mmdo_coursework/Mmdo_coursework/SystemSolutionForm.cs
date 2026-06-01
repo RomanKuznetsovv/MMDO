@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Mmdo_coursework
@@ -22,14 +20,11 @@ namespace Mmdo_coursework
 
         private Label lblOpt;
         private MainScreen _originalMainScreen;
+
         public SystemSolutionForm(MainScreen mainScreen)
         {
             InitializeComponent();
             _originalMainScreen = mainScreen;
-            cmbMethod.Items.Clear();
-            cmbMethod.Items.Add("Симплекс-метод");
-            cmbMethod.Items.Add("Метод штучного базису");
-            cmbMethod.SelectedIndex = 0;
 
             rbMax.Checked = true;
             rbMax.CheckedChanged += UpdateOptLabel;
@@ -62,14 +57,16 @@ namespace Mmdo_coursework
 
             if (vars == 0 || cons == 0) return;
 
-            // ЗБІЛЬШЕНО spacingX з 110 до 135, щоб знаки (+/-) не наїжджали на змінні
+            List<string> varList = new List<string>();
+            for (int i = 1; i <= vars; i++) varList.Add($"x{i}");
+            string varsStr = string.Join(", ", varList);
+
             int startX = 10, startY = 10, spacingX = 135, spacingY = 45;
 
-            // ================= ЦІЛЬОВА ФУНКЦІЯ (Z) =================
-            Label lblZ = new Label { Text = "Z =", Location = new Point(startX, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold) };
-            panelInput.Controls.Add(lblZ);
+            Label lblF = new Label { Text = $"F({varsStr}) =", Location = new Point(startX, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold) };
+            panelInput.Controls.Add(lblF);
 
-            int currentX = startX + 45;
+            int currentX = startX + lblF.PreferredWidth + 5;
             for (int j = 0; j < vars; j++)
             {
                 ComboBox cmbS = new ComboBox { Location = new Point(currentX, startY), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -91,8 +88,9 @@ namespace Mmdo_coursework
             lblOpt = new Label { Text = rbMax.Checked ? "-> Max" : "-> Min", Location = new Point(currentX, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold), ForeColor = Color.DarkRed };
             panelInput.Controls.Add(lblOpt);
 
-            // ================= ОБМЕЖЕННЯ =================
             startY += spacingY + 15;
+            int firstConstraintY = startY;
+
             for (int i = 0; i < cons; i++)
             {
                 currentX = startX;
@@ -138,54 +136,17 @@ namespace Mmdo_coursework
 
                 startY += spacingY;
             }
-        }
 
-        private async void btnSolve_Click(object sender, EventArgs e) // Переконайся, що ця подія прив'язана до кнопки
-        {
-            try
+            Label lblNonNeg = new Label
             {
-                int vars = (int)nudVars.Value;
-                int cons = (int)nudConstraints.Value;
-
-                if (vars == 0 || cons == 0) return;
-
-                double ParseValue(ComboBox signCmb, TextBox tb)
-                {
-                    double val = string.IsNullOrWhiteSpace(tb.Text) ? 0 : Convert.ToDouble(tb.Text);
-                    return signCmb.SelectedItem.ToString() == "-" ? -val : val;
-                }
-
-                double[] objective = new double[vars];
-                for (int j = 0; j < vars; j++) objective[j] = ParseValue(objSigns[j], objCoefficients[j]);
-
-                double[,] matrix = new double[cons, vars];
-                double[] rhs = new double[cons];
-                string[] signs = new string[cons];
-
-                for (int i = 0; i < cons; i++)
-                {
-                    for (int j = 0; j < vars; j++) matrix[i, j] = ParseValue(constraintSigns[i][j], constraintCoefficients[i][j]);
-                    rhs[i] = ParseValue(rhsSigns[i], constraintRHS[i]);
-                    signs[i] = constraintTypes[i].SelectedItem.ToString();
-                }
-
-                bool isMax = rbMax.Checked;
-                bool isArtificialMethod = cmbMethod.SelectedIndex == 1;
-
-                LPSolver solver = new LPSolver();
-                string htmlReport = solver.Solve(objective, matrix, rhs, signs, isMax, isArtificialMethod);
-
-                await webView21.EnsureCoreWebView2Async(null);
-                webView21.NavigateToString(htmlReport);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Помилка:\n" + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                Text = $"{varsStr} >= 0",
+                Location = new Point(startX + 45, startY), 
+                AutoSize = true,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(44, 62, 80)
+            };
+            panelInput.Controls.Add(lblNonNeg);
         }
-
-        // ВАЖЛИВО: Переконайся, що в дизайнері кнопка "Розв'язок системи" викликає саме цей метод
-
 
         private void back_Button_Click(object sender, EventArgs e)
         {
@@ -202,21 +163,18 @@ namespace Mmdo_coursework
 
                 if (vars == 0 || cons == 0) return;
 
-                // Локальна функція для парсингу числа з урахуванням знаку (+/-)
                 double ParseValue(ComboBox signCmb, TextBox tb)
                 {
                     double val = string.IsNullOrWhiteSpace(tb.Text) ? 0 : Convert.ToDouble(tb.Text);
                     return signCmb.SelectedItem.ToString() == "-" ? -val : val;
                 }
 
-                // Зчитуємо цільову функцію
                 double[] objective = new double[vars];
                 for (int j = 0; j < vars; j++)
                 {
                     objective[j] = ParseValue(objSigns[j], objCoefficients[j]);
                 }
 
-                // Зчитуємо обмеження
                 double[,] matrix = new double[cons, vars];
                 double[] rhs = new double[cons];
                 string[] signs = new string[cons];
@@ -232,13 +190,12 @@ namespace Mmdo_coursework
                 }
 
                 bool isMax = rbMax.Checked;
-                bool isArtificialMethod = cmbMethod.SelectedIndex == 1; // 1 = Метод штучного базису
 
-                // Запускаємо математичний рушій
+                bool requireInteger = toggleInteger.Checked;
+
                 LPSolver solver = new LPSolver();
-                string htmlReport = solver.Solve(objective, matrix, rhs, signs, isMax, isArtificialMethod);
+                string htmlReport = solver.Solve(objective, matrix, rhs, signs, isMax, requireInteger);
 
-                // Виводимо у WebView2
                 await webView21.EnsureCoreWebView2Async(null);
                 webView21.NavigateToString(htmlReport);
             }

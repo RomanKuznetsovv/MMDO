@@ -181,7 +181,6 @@
             Controls.Add(btnSolve);
             Name = "MainScreen";
             StartPosition = FormStartPosition.CenterScreen;
-            Load += MainScreen_Load;
             ((System.ComponentModel.ISupportInitialize)webView21).EndInit();
             ((System.ComponentModel.ISupportInitialize)data).EndInit();
             ResumeLayout(false);
