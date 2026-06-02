@@ -9,15 +9,12 @@ namespace Mmdo_coursework
     {
         public MainScreen()
         {
-
             InitializeComponent();
-
             LoadInitialData();
         }
 
         private void LoadInitialData()
         {
-
             if (data.Columns.Count < 4)
             {
                 MessageBox.Show("Будь ласка, переконайтеся, що в DataGridView створено 4 колонки.", "Увага", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -37,8 +34,12 @@ namespace Mmdo_coursework
         {
             try
             {
-                List<double[]> constraints = new List<double[]>();
-                double[] objective = new double[2];
+                int numVars = data.Columns.Count - 2;
+                if (numVars <= 0) return;
+
+                List<double[]> matrixList = new List<double[]>();
+                List<double> rhsList = new List<double>();
+                double[] obj = new double[numVars];
                 bool profitFound = false;
 
                 for (int i = 0; i < data.Rows.Count; i++)
@@ -51,17 +52,23 @@ namespace Mmdo_coursework
 
                     if (resName.ToLower().Contains("прибуток"))
                     {
-                        objective[0] = Convert.ToDouble(data.Rows[i].Cells[2].Value ?? "0");
-                        objective[1] = Convert.ToDouble(data.Rows[i].Cells[3].Value ?? "0");
+                        for (int j = 0; j < numVars; j++)
+                        {
+                            obj[j] = Convert.ToDouble(data.Rows[i].Cells[j + 2].Value ?? "0");
+                        }
                         profitFound = true;
                         continue;
                     }
 
                     double b = Convert.ToDouble(data.Rows[i].Cells[1].Value ?? "0");
-                    double x1 = Convert.ToDouble(data.Rows[i].Cells[2].Value ?? "0");
-                    double x2 = Convert.ToDouble(data.Rows[i].Cells[3].Value ?? "0");
+                    rhsList.Add(b);
 
-                    constraints.Add(new double[] { x1, x2, b });
+                    double[] rowVars = new double[numVars];
+                    for (int j = 0; j < numVars; j++)
+                    {
+                        rowVars[j] = Convert.ToDouble(data.Rows[i].Cells[j + 2].Value ?? "0");
+                    }
+                    matrixList.Add(rowVars);
                 }
 
                 if (!profitFound)
@@ -70,16 +77,30 @@ namespace Mmdo_coursework
                     return;
                 }
 
-                GomorySolver solver = new GomorySolver();
+                int numCons = matrixList.Count;
+                double[,] matrix = new double[numCons, numVars];
+                double[] rhs = new double[numCons];
+                string[] signs = new string[numCons];
 
-                string htmlResult = solver.Solve(constraints, objective);
+                for (int i = 0; i < numCons; i++)
+                {
+                    rhs[i] = rhsList[i];
+                    signs[i] = "<="; 
 
-                // ==========================================
-                // ВИВЕДЕННЯ РЕЗУЛЬТАТУ ЧЕРЕЗ WEBVIEW2
-                // ==========================================
+                    for (int j = 0; j < numVars; j++)
+                    {
+                        matrix[i, j] = matrixList[i][j];
+                    }
+                }
+
+                bool isMax = true;      
+                bool requireInt = true; 
+
+                Solver solver = new Solver();
+
+                string htmlResult = solver.Solve(obj, matrix, rhs, signs, isMax, requireInt);
 
                 await webView21.EnsureCoreWebView2Async(null);
-
                 webView21.NavigateToString(htmlResult);
             }
             catch (FormatException)
@@ -96,9 +117,7 @@ namespace Mmdo_coursework
         {
             SystemSolutionForm solutionWindow = new SystemSolutionForm(this);
             solutionWindow.Show();
-            //this.Hide();
+            this.Hide();
         }
-
-       
     }
 }

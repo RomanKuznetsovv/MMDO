@@ -26,14 +26,18 @@ namespace Mmdo_coursework
             InitializeComponent();
             _originalMainScreen = mainScreen;
 
+            InitializeEventHandlers();
+            GenerateInputFields(null, null);
+        }
+
+        private void InitializeEventHandlers()
+        {
             rbMax.Checked = true;
             rbMax.CheckedChanged += UpdateOptLabel;
             rbMin.CheckedChanged += UpdateOptLabel;
 
             nudVars.ValueChanged += GenerateInputFields;
             nudConstraints.ValueChanged += GenerateInputFields;
-
-            GenerateInputFields(null, null);
         }
 
         private void UpdateOptLabel(object sender, EventArgs e)
@@ -47,20 +51,14 @@ namespace Mmdo_coursework
 
         private void GenerateInputFields(object sender, EventArgs e)
         {
-            panelInput.Controls.Clear();
-            objSigns.Clear(); objCoefficients.Clear();
-            constraintSigns.Clear(); constraintCoefficients.Clear(); constraintTypes.Clear();
-            rhsSigns.Clear(); constraintRHS.Clear();
+            ClearPreviousInputs();
 
             int vars = (int)nudVars.Value;
             int cons = (int)nudConstraints.Value;
 
             if (vars == 0 || cons == 0) return;
 
-            List<string> varList = new List<string>();
-            for (int i = 1; i <= vars; i++) varList.Add($"x{i}");
-            string varsStr = string.Join(", ", varList);
-
+            string varsStr = string.Join(", ", Enumerable.Range(1, vars).Select(i => $"x{i}"));
             int startX = 10, startY = 10, spacingX = 135, spacingY = 45;
 
             Label lblF = new Label { Text = $"F({varsStr}) =", Location = new Point(startX, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 11, FontStyle.Bold) };
@@ -69,19 +67,7 @@ namespace Mmdo_coursework
             int currentX = startX + lblF.PreferredWidth + 5;
             for (int j = 0; j < vars; j++)
             {
-                ComboBox cmbS = new ComboBox { Location = new Point(currentX, startY), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
-                cmbS.Items.AddRange(new string[] { "+", "-" });
-                cmbS.SelectedIndex = 0;
-                objSigns.Add(cmbS);
-                panelInput.Controls.Add(cmbS);
-
-                TextBox tb = new TextBox { Location = new Point(currentX + 45, startY), Width = 45, TextAlign = HorizontalAlignment.Center };
-                objCoefficients.Add(tb);
-                panelInput.Controls.Add(tb);
-
-                Label lbl = new Label { Text = $"x{j + 1}", Location = new Point(currentX + 95, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
-                panelInput.Controls.Add(lbl);
-
+                AddObjectiveTerm(currentX, startY, j);
                 currentX += spacingX;
             }
 
@@ -89,7 +75,6 @@ namespace Mmdo_coursework
             panelInput.Controls.Add(lblOpt);
 
             startY += spacingY + 15;
-            int firstConstraintY = startY;
 
             for (int i = 0; i < cons; i++)
             {
@@ -99,53 +84,85 @@ namespace Mmdo_coursework
 
                 for (int j = 0; j < vars; j++)
                 {
-                    ComboBox cmbS = new ComboBox { Location = new Point(currentX, startY), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
-                    cmbS.Items.AddRange(new string[] { "+", "-" });
-                    cmbS.SelectedIndex = 0;
-                    rowSigns.Add(cmbS);
-                    panelInput.Controls.Add(cmbS);
-
-                    TextBox tb = new TextBox { Location = new Point(currentX + 45, startY), Width = 45, TextAlign = HorizontalAlignment.Center };
-                    rowTb.Add(tb);
-                    panelInput.Controls.Add(tb);
-
-                    Label lbl = new Label { Text = $"x{j + 1}", Location = new Point(currentX + 95, startY + 4), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
-                    panelInput.Controls.Add(lbl);
-
+                    AddConstraintTerm(currentX, startY, j, rowSigns, rowTb);
                     currentX += spacingX;
                 }
                 constraintSigns.Add(rowSigns);
                 constraintCoefficients.Add(rowTb);
 
-                ComboBox cmbType = new ComboBox { Location = new Point(currentX, startY), Width = 55, DropDownStyle = ComboBoxStyle.DropDownList };
-                cmbType.Items.AddRange(new string[] { "<=", ">=", "=" });
-                cmbType.SelectedIndex = 0;
-                constraintTypes.Add(cmbType);
-                panelInput.Controls.Add(cmbType);
-                currentX += 65;
-
-                ComboBox cmbRhsS = new ComboBox { Location = new Point(currentX, startY), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
-                cmbRhsS.Items.AddRange(new string[] { "+", "-" });
-                cmbRhsS.SelectedIndex = 0;
-                rhsSigns.Add(cmbRhsS);
-                panelInput.Controls.Add(cmbRhsS);
-
-                TextBox tbRHS = new TextBox { Location = new Point(currentX + 45, startY), Width = 50, TextAlign = HorizontalAlignment.Center };
-                constraintRHS.Add(tbRHS);
-                panelInput.Controls.Add(tbRHS);
-
+                AddConstraintRHS(currentX, startY);
                 startY += spacingY;
             }
 
             Label lblNonNeg = new Label
             {
                 Text = $"{varsStr} >= 0",
-                Location = new Point(startX + 45, startY), 
+                Location = new Point(startX + 45, startY),
                 AutoSize = true,
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = Color.FromArgb(44, 62, 80)
             };
             panelInput.Controls.Add(lblNonNeg);
+        }
+
+        private void ClearPreviousInputs()
+        {
+            panelInput.Controls.Clear();
+            objSigns.Clear(); objCoefficients.Clear();
+            constraintSigns.Clear(); constraintCoefficients.Clear(); constraintTypes.Clear();
+            rhsSigns.Clear(); constraintRHS.Clear();
+        }
+
+        private void AddObjectiveTerm(int x, int y, int index)
+        {
+            ComboBox cmbS = new ComboBox { Location = new Point(x, y), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbS.Items.AddRange(new string[] { "+", "-" });
+            cmbS.SelectedIndex = 0;
+            objSigns.Add(cmbS);
+            panelInput.Controls.Add(cmbS);
+
+            TextBox tb = new TextBox { Location = new Point(x + 45, y), Width = 45, TextAlign = HorizontalAlignment.Center };
+            objCoefficients.Add(tb);
+            panelInput.Controls.Add(tb);
+
+            Label lbl = new Label { Text = $"x{index + 1}", Location = new Point(x + 95, y + 4), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            panelInput.Controls.Add(lbl);
+        }
+
+        private void AddConstraintTerm(int x, int y, int index, List<ComboBox> rowSigns, List<TextBox> rowTb)
+        {
+            ComboBox cmbS = new ComboBox { Location = new Point(x, y), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbS.Items.AddRange(new string[] { "+", "-" });
+            cmbS.SelectedIndex = 0;
+            rowSigns.Add(cmbS);
+            panelInput.Controls.Add(cmbS);
+
+            TextBox tb = new TextBox { Location = new Point(x + 45, y), Width = 45, TextAlign = HorizontalAlignment.Center };
+            rowTb.Add(tb);
+            panelInput.Controls.Add(tb);
+
+            Label lbl = new Label { Text = $"x{index + 1}", Location = new Point(x + 95, y + 4), AutoSize = true, Font = new Font("Segoe UI", 10, FontStyle.Bold) };
+            panelInput.Controls.Add(lbl);
+        }
+
+        private void AddConstraintRHS(int x, int y)
+        {
+            ComboBox cmbType = new ComboBox { Location = new Point(x, y), Width = 55, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbType.Items.AddRange(new string[] { "<=", ">=", "=" });
+            cmbType.SelectedIndex = 0;
+            constraintTypes.Add(cmbType);
+            panelInput.Controls.Add(cmbType);
+            x += 65;
+
+            ComboBox cmbRhsS = new ComboBox { Location = new Point(x, y), Width = 40, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbRhsS.Items.AddRange(new string[] { "+", "-" });
+            cmbRhsS.SelectedIndex = 0;
+            rhsSigns.Add(cmbRhsS);
+            panelInput.Controls.Add(cmbRhsS);
+
+            TextBox tbRHS = new TextBox { Location = new Point(x + 45, y), Width = 50, TextAlign = HorizontalAlignment.Center };
+            constraintRHS.Add(tbRHS);
+            panelInput.Controls.Add(tbRHS);
         }
 
         private void back_Button_Click(object sender, EventArgs e)
@@ -158,42 +175,14 @@ namespace Mmdo_coursework
         {
             try
             {
-                int vars = (int)nudVars.Value;
-                int cons = (int)nudConstraints.Value;
+                if (nudVars.Value == 0 || nudConstraints.Value == 0) return;
 
-                if (vars == 0 || cons == 0) return;
-
-                double ParseValue(ComboBox signCmb, TextBox tb)
-                {
-                    double val = string.IsNullOrWhiteSpace(tb.Text) ? 0 : Convert.ToDouble(tb.Text);
-                    return signCmb.SelectedItem.ToString() == "-" ? -val : val;
-                }
-
-                double[] objective = new double[vars];
-                for (int j = 0; j < vars; j++)
-                {
-                    objective[j] = ParseValue(objSigns[j], objCoefficients[j]);
-                }
-
-                double[,] matrix = new double[cons, vars];
-                double[] rhs = new double[cons];
-                string[] signs = new string[cons];
-
-                for (int i = 0; i < cons; i++)
-                {
-                    for (int j = 0; j < vars; j++)
-                    {
-                        matrix[i, j] = ParseValue(constraintSigns[i][j], constraintCoefficients[i][j]);
-                    }
-                    rhs[i] = ParseValue(rhsSigns[i], constraintRHS[i]);
-                    signs[i] = constraintTypes[i].SelectedItem.ToString();
-                }
+                ParseInputData(out double[] objective, out double[,] matrix, out double[] rhs, out string[] signs);
 
                 bool isMax = rbMax.Checked;
-
                 bool requireInteger = toggleInteger.Checked;
 
-                LPSolver solver = new LPSolver();
+                Solver solver = new Solver();
                 string htmlReport = solver.Solve(objective, matrix, rhs, signs, isMax, requireInteger);
 
                 await webView21.EnsureCoreWebView2Async(null);
@@ -207,6 +196,38 @@ namespace Mmdo_coursework
             {
                 MessageBox.Show("Сталася помилка:\n" + ex.Message, "Помилка", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void ParseInputData(out double[] objective, out double[,] matrix, out double[] rhs, out string[] signs)
+        {
+            int vars = (int)nudVars.Value;
+            int cons = (int)nudConstraints.Value;
+
+            objective = new double[vars];
+            matrix = new double[cons, vars];
+            rhs = new double[cons];
+            signs = new string[cons];
+
+            for (int j = 0; j < vars; j++)
+            {
+                objective[j] = ParseValue(objSigns[j], objCoefficients[j]);
+            }
+
+            for (int i = 0; i < cons; i++)
+            {
+                for (int j = 0; j < vars; j++)
+                {
+                    matrix[i, j] = ParseValue(constraintSigns[i][j], constraintCoefficients[i][j]);
+                }
+                rhs[i] = ParseValue(rhsSigns[i], constraintRHS[i]);
+                signs[i] = constraintTypes[i].SelectedItem.ToString();
+            }
+        }
+
+        private double ParseValue(ComboBox signCmb, TextBox tb)
+        {
+            double val = string.IsNullOrWhiteSpace(tb.Text) ? 0 : Convert.ToDouble(tb.Text);
+            return signCmb.SelectedItem.ToString() == "-" ? -val : val;
         }
     }
 }
